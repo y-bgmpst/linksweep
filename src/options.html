@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TidyURL Maid Rules</title>
+    <link rel="stylesheet" href="options.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>TidyURL Maid Rules</h1>
+        <button id="save" type="button">Save</button>
+      </header>
+
+      <section>
+        <h2>Tracking Parameters</h2>
+        <label class="stack">
+          <span>One parameter per line</span>
+          <textarea id="trackingParams" rows="12" spellcheck="false"></textarea>
+        </label>
+      </section>
+
+      <section>
+        <h2>Redirects</h2>
+        <div id="redirects" class="redirect-list"></div>
+        <button id="addRedirect" type="button" class="secondary">Add redirect</button>
+      </section>
+
+      <p id="status" role="status"></p>
+    </main>
+    <template id="redirectTemplate">
+      <article class="redirect-row">
+        <label>
+          <span>On</span>
+          <input data-field="enabled" type="checkbox">
+        </label>
+        <label>
+          <span>Source host</span>
+          <input data-field="sourceHost" type="text" placeholder="example.com">
+        </label>
+        <label>
+          <span>Target origin</span>
+          <input data-field="targetOrigin" type="url" placeholder="https://alt.example">
+        </label>
+        <label>
+          <span>Subdomains</span>
+          <input data-field="includeSubdomains" type="checkbox">
+        </label>
+        <button data-action="remove" type="button" class="danger">Remove</button>
+      </article>
+    </template>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

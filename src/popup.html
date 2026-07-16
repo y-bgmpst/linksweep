@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TidyURL Maid</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <h1>TidyURL Maid</h1>
+        <label class="switch">
+          <input id="enabled" type="checkbox">
+          <span>Enabled</span>
+        </label>
+      </header>
+
+      <section class="toggles" aria-label="Features">
+        <label>
+          <input id="cleanTrackingParams" type="checkbox">
+          Strip trackers
+        </label>
+        <label>
+          <input id="redirectEnabled" type="checkbox">
+          Redirect domains
+        </label>
+      </section>
+
+      <label class="field">
+        <span>Preview URL</span>
+        <textarea id="previewInput" rows="4" spellcheck="false">https://www.youtube.com/watch?v=dQw4w9WgXcQ&utm_source=newsletter&fbclid=test</textarea>
+      </label>
+
+      <output id="previewOutput" class="result"></output>
+
+      <div class="actions">
+        <button id="cleanTab" type="button">Clean tab</button>
+        <button id="openOptions" type="button">Rules</button>
+      </div>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>
