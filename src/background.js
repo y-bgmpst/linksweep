@@ -8,6 +8,12 @@ import {
 
 const SETTINGS_KEY = "settings";
 const LEARNED_KEY = "learnedParams";
+const LINKSWEEP_DYNAMIC_RULE_IDS = [
+  1,
+  ...Array.from({ length: 1000 }, (_value, index) => index + 100)
+];
+
+let dynamicRulesSync = Promise.resolve();
 
 chrome.runtime.onInstalled.addListener(async () => {
   const stored = await chrome.storage.local.get([SETTINGS_KEY, LEARNED_KEY]);
@@ -17,16 +23,16 @@ chrome.runtime.onInstalled.addListener(async () => {
     [SETTINGS_KEY]: settings,
     [LEARNED_KEY]: learnedParams
   });
-  await syncDynamicRules(settings);
+  await queueDynamicRulesSync(settings);
 });
 
 chrome.runtime.onStartup.addListener(async () => {
-  await syncDynamicRules(await getSettings());
+  await queueDynamicRulesSync(await getSettings());
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes[SETTINGS_KEY]) {
-    syncDynamicRules(normalizeSettings(changes[SETTINGS_KEY].newValue))
+    queueDynamicRulesSync(normalizeSettings(changes[SETTINGS_KEY].newValue))
       .catch((error) => console.error("Failed to sync LinkSweep rules.", error));
   }
 });
@@ -48,10 +54,23 @@ async function getLearnedParams() {
   return normalizeLearnedParams(stored[LEARNED_KEY]);
 }
 
+function queueDynamicRulesSync(settings) {
+  dynamicRulesSync = dynamicRulesSync
+    .catch(() => undefined)
+    .then(() => syncDynamicRules(settings));
+
+  return dynamicRulesSync;
+}
+
 async function syncDynamicRules(settings) {
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
+  const removeRuleIds = [...new Set([
+    ...existing.map((rule) => rule.id),
+    ...LINKSWEEP_DYNAMIC_RULE_IDS
+  ])];
+
   await chrome.declarativeNetRequest.updateDynamicRules({
-    removeRuleIds: existing.map((rule) => rule.id),
+    removeRuleIds,
     addRules: buildDynamicRules(settings)
   });
 }

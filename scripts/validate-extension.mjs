@@ -5,7 +5,7 @@ import { spawnSync } from "node:child_process";
 const manifest = JSON.parse(await readFile("manifest.json", "utf8"));
 
 assert.equal(manifest.manifest_version, 3, "manifest_version must be 3");
-assert.equal(manifest.version, "0.0.2", "manifest version must match v0.0.2");
+assert.equal(manifest.version, "0.0.3", "manifest version must match v0.0.3");
 assert.equal(manifest.name, "LinkSweep", "manifest name must be LinkSweep");
 assert.deepEqual(manifest.permissions.sort(), [
   "activeTab",

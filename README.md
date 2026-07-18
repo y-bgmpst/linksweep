@@ -1,6 +1,6 @@
 # LinkSweep
 
-LinkSweep is a dependency-free Manifest V3 v0.0.2 MVP for a URL cleaner and
+LinkSweep is a dependency-free Manifest V3 v0.0.3 MVP for a URL cleaner and
 redirector extension.
 
 ## MVP Features
