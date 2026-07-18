@@ -49,10 +49,17 @@ const DEFAULT_REDIRECTS = [
 const DEFAULT_SETTINGS = {
   enabled: true,
   cleanTrackingParams: true,
+  learnEnabled: true,
   redirectEnabled: true,
   stripEmptyParams: true,
   trackingParams: DEFAULT_TRACKING_PARAMS,
   redirects: DEFAULT_REDIRECTS
+};
+
+const DEFAULT_LEARNED_PARAMS = {
+  version: 1,
+  dismissedParams: [],
+  domains: {}
 };
 
 const CLEANUP_RULE_ID = 1;
@@ -62,10 +69,11 @@ function normalizeSettings(settings = {}) {
   const merged = { ...DEFAULT_SETTINGS, ...settings };
   return {
     ...merged,
+    learnEnabled: Boolean(merged.learnEnabled),
     trackingParams: normalizeParamList(merged.trackingParams),
     redirects: Array.isArray(merged.redirects)
       ? merged.redirects.map(normalizeRedirect).filter(Boolean)
-      : DEFAULT_REDIRECTS
+      : DEFAULT_REDIRECTS.map(normalizeRedirect).filter(Boolean)
   };
 }
 
@@ -114,6 +122,48 @@ function normalizeHost(value) {
   return host.replace(/^\.+|\.+$/g, "");
 }
 
+function normalizeLearnedParams(learned = {}) {
+  const dismissedParams = normalizeParamList(learned.dismissedParams || []);
+  const domains = {};
+
+  if (learned.domains && typeof learned.domains === "object") {
+    for (const [domain, domainStats] of Object.entries(learned.domains)) {
+      const host = normalizeHost(domain);
+      if (!host || !domainStats || typeof domainStats !== "object") {
+        continue;
+      }
+
+      const params = {};
+      const sourceParams = domainStats.params && typeof domainStats.params === "object"
+        ? domainStats.params
+        : {};
+
+      for (const [param, stats] of Object.entries(sourceParams)) {
+        const normalizedParam = normalizeParamList([param])[0];
+        if (!normalizedParam || !stats || typeof stats !== "object") {
+          continue;
+        }
+
+        params[normalizedParam] = {
+          count: Math.max(0, Number.parseInt(stats.count, 10) || 0),
+          firstSeen: Number.parseInt(stats.firstSeen, 10) || 0,
+          lastSeen: Number.parseInt(stats.lastSeen, 10) || 0
+        };
+      }
+
+      if (Object.keys(params).length > 0) {
+        domains[host] = { params };
+      }
+    }
+  }
+
+  return {
+    version: 1,
+    dismissedParams,
+    domains
+  };
+}
+
 function normalizeOrigin(value) {
   try {
     const url = new URL(String(value || "").trim());
@@ -159,6 +209,118 @@ function cleanUrl(input, settings = DEFAULT_SETTINGS) {
     changed: before !== url.href,
     originalUrl: before,
     cleanedUrl: url.href
+  };
+}
+
+function learnFromUrl(input, learned = DEFAULT_LEARNED_PARAMS, settings = DEFAULT_SETTINGS, now = Date.now()) {
+  const normalizedSettings = normalizeSettings(settings);
+  const normalizedLearned = normalizeLearnedParams(learned);
+
+  if (!normalizedSettings.enabled || !normalizedSettings.learnEnabled) {
+    return { ok: true, changed: false, learned: normalizedLearned };
+  }
+
+  let url;
+  try {
+    url = new URL(input);
+  } catch {
+    return { ok: false, changed: false, reason: "Enter a valid absolute URL.", learned: normalizedLearned };
+  }
+
+  if (!["http:", "https:"].includes(url.protocol) || !url.hostname.includes(".")) {
+    return { ok: true, changed: false, learned: normalizedLearned };
+  }
+
+  const knownParams = new Set(normalizedSettings.trackingParams);
+  const dismissedParams = new Set(normalizedLearned.dismissedParams);
+  const params = normalizeParamList([...url.searchParams.keys()])
+    .filter((param) => !knownParams.has(param) && !dismissedParams.has(param));
+
+  if (params.length === 0) {
+    return { ok: true, changed: false, learned: normalizedLearned };
+  }
+
+  const host = normalizeHost(url.hostname);
+  const nextDomain = normalizedLearned.domains[host]
+    ? { params: { ...normalizedLearned.domains[host].params } }
+    : { params: {} };
+
+  for (const param of params) {
+    const previous = nextDomain.params[param] || {
+      count: 0,
+      firstSeen: now,
+      lastSeen: 0
+    };
+
+    nextDomain.params[param] = {
+      count: previous.count + 1,
+      firstSeen: previous.firstSeen || now,
+      lastSeen: now
+    };
+  }
+
+  return {
+    ok: true,
+    changed: true,
+    learned: {
+      ...normalizedLearned,
+      domains: {
+        ...normalizedLearned.domains,
+        [host]: nextDomain
+      }
+    }
+  };
+}
+
+function getLearnedSuggestions(learned = DEFAULT_LEARNED_PARAMS, settings = DEFAULT_SETTINGS, options = {}) {
+  const normalizedLearned = normalizeLearnedParams(learned);
+  const normalizedSettings = normalizeSettings(settings);
+  const knownParams = new Set(normalizedSettings.trackingParams);
+  const dismissedParams = new Set(normalizedLearned.dismissedParams);
+  const limit = Number.parseInt(options.limit, 10) || 20;
+  const minCount = Number.parseInt(options.minCount, 10) || 1;
+  const suggestions = new Map();
+
+  for (const [domain, domainStats] of Object.entries(normalizedLearned.domains)) {
+    for (const [param, stats] of Object.entries(domainStats.params)) {
+      if (knownParams.has(param) || dismissedParams.has(param) || stats.count < minCount) {
+        continue;
+      }
+
+      const existing = suggestions.get(param) || {
+        param,
+        count: 0,
+        domains: [],
+        lastSeen: 0
+      };
+
+      suggestions.set(param, {
+        ...existing,
+        count: existing.count + stats.count,
+        domains: [...existing.domains, domain].sort(),
+        lastSeen: Math.max(existing.lastSeen, stats.lastSeen)
+      });
+    }
+  }
+
+  return [...suggestions.values()]
+    .sort((left, right) => right.count - left.count || left.param.localeCompare(right.param))
+    .slice(0, limit);
+}
+
+function dismissLearnedParam(learned = DEFAULT_LEARNED_PARAMS, param) {
+  const normalizedLearned = normalizeLearnedParams(learned);
+  const normalizedParam = normalizeParamList([param])[0];
+  if (!normalizedParam) {
+    return normalizedLearned;
+  }
+
+  return {
+    ...normalizedLearned,
+    dismissedParams: normalizeParamList([
+      ...normalizedLearned.dismissedParams,
+      normalizedParam
+    ])
   };
 }
 
@@ -294,6 +456,7 @@ function escapeRegex(value) {
 }
 
 const api = {
+  DEFAULT_LEARNED_PARAMS,
   DEFAULT_SETTINGS,
   DEFAULT_TRACKING_PARAMS,
   DEFAULT_REDIRECTS,
@@ -301,12 +464,17 @@ const api = {
   buildDynamicRedirectRules,
   buildDynamicRules,
   cleanUrl,
+  dismissLearnedParam,
+  getLearnedSuggestions,
+  learnFromUrl,
+  normalizeLearnedParams,
   normalizeSettings,
   previewUrl,
   redirectUrl
 };
 
 export {
+  DEFAULT_LEARNED_PARAMS,
   DEFAULT_SETTINGS,
   DEFAULT_TRACKING_PARAMS,
   DEFAULT_REDIRECTS,
@@ -314,6 +482,10 @@ export {
   buildDynamicRedirectRules,
   buildDynamicRules,
   cleanUrl,
+  dismissLearnedParam,
+  getLearnedSuggestions,
+  learnFromUrl,
+  normalizeLearnedParams,
   normalizeSettings,
   previewUrl,
   redirectUrl

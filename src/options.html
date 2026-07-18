@@ -22,6 +22,11 @@
       </section>
 
       <section>
+        <h2>Learned Suggestions</h2>
+        <div id="suggestions" class="suggestion-list"></div>
+      </section>
+
+      <section>
         <h2>Redirects</h2>
         <div id="redirects" class="redirect-list"></div>
         <button id="addRedirect" type="button" class="secondary">Add redirect</button>
@@ -48,6 +53,16 @@
           <input data-field="includeSubdomains" type="checkbox">
         </label>
         <button data-action="remove" type="button" class="danger">Remove</button>
+      </article>
+    </template>
+    <template id="suggestionTemplate">
+      <article class="suggestion-row">
+        <div>
+          <strong data-field="param"></strong>
+          <span data-field="meta"></span>
+        </div>
+        <button data-action="add" type="button" class="secondary">Add</button>
+        <button data-action="dismiss" type="button" class="danger">Dismiss</button>
       </article>
     </template>
     <script type="module" src="options.js"></script>

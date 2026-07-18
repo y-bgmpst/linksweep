@@ -2,12 +2,13 @@
   "manifest_version": 3,
   "name": "LinkSweep",
   "description": "Small URL cleaner and redirector for stripping tracking parameters and routing known domains.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "minimum_chrome_version": "121",
   "permissions": [
     "activeTab",
     "declarativeNetRequest",
-    "storage"
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "<all_urls>"

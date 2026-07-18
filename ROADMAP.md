@@ -17,6 +17,8 @@ Status: released
 
 ## v0.0.2 - Learn Mode
 
+Status: released
+
 Goal: discover suspicious query parameters locally and ask the user before
 cleaning them.
 
@@ -67,4 +69,3 @@ Goal: make the extension comfortable for daily use.
 - No automatic removal of unknown parameters.
 - No dependency-heavy frontend framework.
 - No hidden network requests.
-

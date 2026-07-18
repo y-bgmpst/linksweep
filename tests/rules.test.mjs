@@ -1,9 +1,14 @@
 import assert from "node:assert/strict";
 import {
+  DEFAULT_SETTINGS,
   buildDynamicCleanupRules,
   buildDynamicRedirectRules,
   buildDynamicRules,
   cleanUrl,
+  dismissLearnedParam,
+  getLearnedSuggestions,
+  learnFromUrl,
+  normalizeSettings,
   previewUrl,
   redirectUrl
 } from "../src/rules.js";
@@ -81,6 +86,61 @@ const settings = {
   assert.deepEqual(buildDynamicRules({ ...settings, enabled: false }), []);
   assert.deepEqual(buildDynamicCleanupRules({ ...settings, cleanTrackingParams: false }), []);
   assert.deepEqual(buildDynamicRedirectRules({ ...settings, redirectEnabled: false }), []);
+}
+
+{
+  const result = learnFromUrl(
+    "https://shop.example/products?variant=1&ref_campaign=spring&utm_source=mail",
+    undefined,
+    settings,
+    100
+  );
+  assert.equal(result.ok, true);
+  assert.equal(result.changed, true);
+  assert.equal(result.learned.domains["shop.example"].params.ref_campaign.count, 1);
+  assert.equal(result.learned.domains["shop.example"].params.variant.count, 1);
+  assert.equal(result.learned.domains["shop.example"].params.utm_source, undefined);
+}
+
+{
+  const first = learnFromUrl("https://shop.example/?ref_campaign=one", undefined, settings, 100);
+  const second = learnFromUrl("https://blog.example/?ref_campaign=two", first.learned, settings, 200);
+  const suggestions = getLearnedSuggestions(second.learned, settings);
+  assert.deepEqual(suggestions, [
+    {
+      param: "ref_campaign",
+      count: 2,
+      domains: ["blog.example", "shop.example"],
+      lastSeen: 200
+    }
+  ]);
+}
+
+{
+  const learned = learnFromUrl("https://shop.example/?ref_campaign=one", undefined, settings, 100).learned;
+  const dismissed = dismissLearnedParam(learned, "ref_campaign");
+  assert.deepEqual(getLearnedSuggestions(dismissed, settings), []);
+}
+
+{
+  const result = learnFromUrl("https://shop.example/?maybe_tracking=1", undefined, {
+    ...settings,
+    learnEnabled: false
+  });
+  assert.equal(result.changed, false);
+  assert.deepEqual(getLearnedSuggestions(result.learned, settings), []);
+}
+
+{
+  const normalized = normalizeSettings();
+  normalized.redirects.push({
+    id: "custom",
+    enabled: true,
+    sourceHost: "example.com",
+    includeSubdomains: false,
+    targetOrigin: "https://alt.example"
+  });
+  assert.equal(DEFAULT_SETTINGS.redirects.some((rule) => rule.id === "custom"), false);
 }
 
 {

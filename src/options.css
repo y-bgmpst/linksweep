@@ -45,6 +45,7 @@ h2 {
 
 .stack,
 .redirect-row,
+.suggestion-row,
 label {
   display: grid;
   gap: 6px;
@@ -76,6 +77,15 @@ input[type="checkbox"] {
   gap: 10px;
 }
 
+.suggestion-list {
+  display: grid;
+  gap: 10px;
+}
+
+.suggestion-empty {
+  color: #475569;
+}
+
 .redirect-row {
   grid-template-columns: 64px minmax(170px, 1fr) minmax(220px, 1.4fr) 110px auto;
   align-items: end;
@@ -83,6 +93,26 @@ input[type="checkbox"] {
   border-radius: 8px;
   padding: 12px;
   background: #ffffff;
+}
+
+.suggestion-row {
+  grid-template-columns: minmax(180px, 1fr) auto auto;
+  align-items: center;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.suggestion-row strong,
+.suggestion-row span {
+  display: block;
+}
+
+.suggestion-row span {
+  margin-top: 3px;
+  color: #475569;
+  font-size: 13px;
 }
 
 button {
@@ -132,10 +162,15 @@ button:focus-visible {
 
   textarea,
   input,
-  .redirect-row {
+  .redirect-row,
+  .suggestion-row {
     border-color: #334155;
     background: #020617;
     color: #f8fafc;
   }
-}
 
+  .suggestion-empty,
+  .suggestion-row span {
+    color: #cbd5e1;
+  }
+}

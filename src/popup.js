@@ -4,6 +4,7 @@ const SETTINGS_KEY = "settings";
 const fields = {
   enabled: document.querySelector("#enabled"),
   cleanTrackingParams: document.querySelector("#cleanTrackingParams"),
+  learnEnabled: document.querySelector("#learnEnabled"),
   redirectEnabled: document.querySelector("#redirectEnabled"),
   previewInput: document.querySelector("#previewInput"),
   previewOutput: document.querySelector("#previewOutput"),
@@ -22,6 +23,7 @@ async function init() {
 
   fields.enabled.addEventListener("change", updateBooleanSetting);
   fields.cleanTrackingParams.addEventListener("change", updateBooleanSetting);
+  fields.learnEnabled.addEventListener("change", updateBooleanSetting);
   fields.redirectEnabled.addEventListener("change", updateBooleanSetting);
   fields.previewInput.addEventListener("input", renderPreview);
   fields.cleanTab.addEventListener("click", cleanActiveTab);
@@ -36,6 +38,7 @@ async function loadSettings() {
 function renderSettings() {
   fields.enabled.checked = settings.enabled;
   fields.cleanTrackingParams.checked = settings.cleanTrackingParams;
+  fields.learnEnabled.checked = settings.learnEnabled;
   fields.redirectEnabled.checked = settings.redirectEnabled;
 }
 
