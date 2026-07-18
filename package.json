@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "node scripts/build-extension.mjs",
+    "ci": "npm test && npm run validate && npm run build",
+    "validate": "node scripts/validate-extension.mjs",
     "test": "node tests/rules.test.mjs"
   }
 }

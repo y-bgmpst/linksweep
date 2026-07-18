@@ -32,6 +32,12 @@ const settings = {
 }
 
 {
+  const result = cleanUrl("https://example.com/a?UTM_SOURCE=x&keep=1&unknown=y", settings);
+  assert.equal(result.ok, true);
+  assert.equal(result.cleanedUrl, "https://example.com/a?keep=1&unknown=y");
+}
+
+{
   const result = redirectUrl("https://www.youtube.com/watch?v=1", settings);
   assert.equal(result.ok, true);
   assert.equal(result.redirectedUrl, "https://yewtu.be/watch?v=1");
@@ -69,6 +75,12 @@ const settings = {
   const rules = buildDynamicRules(settings);
   assert.equal(rules.length, 2);
   assert.deepEqual(rules.map((rule) => rule.id), [1, 100]);
+}
+
+{
+  assert.deepEqual(buildDynamicRules({ ...settings, enabled: false }), []);
+  assert.deepEqual(buildDynamicCleanupRules({ ...settings, cleanTrackingParams: false }), []);
+  assert.deepEqual(buildDynamicRedirectRules({ ...settings, redirectEnabled: false }), []);
 }
 
 {
