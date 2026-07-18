@@ -1,6 +1,6 @@
-# linksweeper
+# LinkSweep
 
-linksweeper is a dependency-free Manifest V3 prototype for a URL cleaner and
+LinkSweep is a dependency-free Manifest V3 v0.0.1 MVP for a URL cleaner and
 redirector extension.
 
 ## MVP Features
@@ -9,13 +9,13 @@ redirector extension.
 - Redirects configured domains to alternative frontends.
 - Provides a popup preview before changing URLs.
 - Stores settings locally with `chrome.storage.local`.
-- Uses dynamic `declarativeNetRequest` rules for main-frame redirects.
+- Uses dynamic `declarativeNetRequest` rules for main-frame cleanup and redirects.
 
 ## Try It
 
 1. Open `chrome://extensions`.
 2. Enable Developer mode.
-3. Load `/home/rhax/linksweep` as an unpacked extension.
+3. Load this repository directory as an unpacked extension.
 4. Open the extension popup and preview a URL.
 5. Open the options page to enable or edit redirect rules.
 

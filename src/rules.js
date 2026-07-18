@@ -55,6 +55,9 @@ const DEFAULT_SETTINGS = {
   redirects: DEFAULT_REDIRECTS
 };
 
+const CLEANUP_RULE_ID = 1;
+const REDIRECT_RULE_ID_OFFSET = 100;
+
 function normalizeSettings(settings = {}) {
   const merged = { ...DEFAULT_SETTINGS, ...settings };
   return {
@@ -232,7 +235,7 @@ function buildDynamicRedirectRules(settings = DEFAULT_SETTINGS) {
   return normalized.redirects
     .filter((rule) => rule.enabled)
     .map((rule, index) => ({
-      id: index + 1,
+      id: REDIRECT_RULE_ID_OFFSET + index,
       priority: 1,
       action: {
         type: "redirect",
@@ -251,6 +254,41 @@ function buildDynamicRedirectRules(settings = DEFAULT_SETTINGS) {
     }));
 }
 
+function buildDynamicCleanupRules(settings = DEFAULT_SETTINGS) {
+  const normalized = normalizeSettings(settings);
+  if (!normalized.enabled || !normalized.cleanTrackingParams || normalized.trackingParams.length === 0) {
+    return [];
+  }
+
+  return [
+    {
+      id: CLEANUP_RULE_ID,
+      priority: 2,
+      action: {
+        type: "redirect",
+        redirect: {
+          transform: {
+            queryTransform: {
+              removeParams: normalized.trackingParams
+            }
+          }
+        }
+      },
+      condition: {
+        regexFilter: `^https?://[^#]*[?&](${normalized.trackingParams.map(escapeRegex).join("|")})(=|&|$)`,
+        resourceTypes: ["main_frame"]
+      }
+    }
+  ];
+}
+
+function buildDynamicRules(settings = DEFAULT_SETTINGS) {
+  return [
+    ...buildDynamicCleanupRules(settings),
+    ...buildDynamicRedirectRules(settings)
+  ];
+}
+
 function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -259,7 +297,9 @@ const api = {
   DEFAULT_SETTINGS,
   DEFAULT_TRACKING_PARAMS,
   DEFAULT_REDIRECTS,
+  buildDynamicCleanupRules,
   buildDynamicRedirectRules,
+  buildDynamicRules,
   cleanUrl,
   normalizeSettings,
   previewUrl,
@@ -270,7 +310,9 @@ export {
   DEFAULT_SETTINGS,
   DEFAULT_TRACKING_PARAMS,
   DEFAULT_REDIRECTS,
+  buildDynamicCleanupRules,
   buildDynamicRedirectRules,
+  buildDynamicRules,
   cleanUrl,
   normalizeSettings,
   previewUrl,
