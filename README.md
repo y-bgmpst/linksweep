@@ -25,6 +25,10 @@ redirector extension.
 node tests/rules.test.mjs
 ```
 
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md).
+
 ## Notes
 
 The redirect examples are disabled by default. Enable only the alternatives you
