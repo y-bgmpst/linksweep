@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import {
+  buildDynamicCleanupRules,
   buildDynamicRedirectRules,
+  buildDynamicRules,
   cleanUrl,
   previewUrl,
   redirectUrl
@@ -45,9 +47,28 @@ const settings = {
 {
   const rules = buildDynamicRedirectRules(settings);
   assert.equal(rules.length, 1);
+  assert.equal(rules[0].id, 100);
   assert.equal(rules[0].action.type, "redirect");
   assert.match(rules[0].condition.regexFilter, /youtube/);
   assert.equal(rules[0].action.redirect.regexSubstitution, "https://yewtu.be/\\2");
+}
+
+{
+  const rules = buildDynamicCleanupRules(settings);
+  assert.equal(rules.length, 1);
+  assert.equal(rules[0].id, 1);
+  assert.equal(rules[0].action.type, "redirect");
+  assert.deepEqual(rules[0].action.redirect.transform.queryTransform.removeParams, [
+    "fbclid",
+    "utm_source"
+  ]);
+  assert.deepEqual(rules[0].condition.resourceTypes, ["main_frame"]);
+}
+
+{
+  const rules = buildDynamicRules(settings);
+  assert.equal(rules.length, 2);
+  assert.deepEqual(rules.map((rule) => rule.id), [1, 100]);
 }
 
 {

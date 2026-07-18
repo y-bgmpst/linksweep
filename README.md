@@ -1,6 +1,6 @@
 # LinkSweep
 
-LinkSweep is a dependency-free Manifest V3 prototype for a URL cleaner and
+LinkSweep is a dependency-free Manifest V3 v0.0.1 MVP for a URL cleaner and
 redirector extension.
 
 ## MVP Features
@@ -9,7 +9,7 @@ redirector extension.
 - Redirects configured domains to alternative frontends.
 - Provides a popup preview before changing URLs.
 - Stores settings locally with `chrome.storage.local`.
-- Uses dynamic `declarativeNetRequest` rules for main-frame redirects.
+- Uses dynamic `declarativeNetRequest` rules for main-frame cleanup and redirects.
 
 ## Try It
 

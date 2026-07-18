@@ -1,4 +1,4 @@
-import { buildDynamicRedirectRules, normalizeSettings } from "./rules.js";
+import { buildDynamicRules, normalizeSettings } from "./rules.js";
 
 const SETTINGS_KEY = "settings";
 
@@ -27,6 +27,6 @@ async function syncDynamicRules(settings) {
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
   await chrome.declarativeNetRequest.updateDynamicRules({
     removeRuleIds: existing.map((rule) => rule.id),
-    addRules: buildDynamicRedirectRules(settings)
+    addRules: buildDynamicRules(settings)
   });
 }

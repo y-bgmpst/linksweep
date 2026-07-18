@@ -1,4 +1,4 @@
-import { DEFAULT_SETTINGS, cleanUrl, normalizeSettings, previewUrl } from "./rules.js";
+import { DEFAULT_SETTINGS, normalizeSettings, previewUrl } from "./rules.js";
 
 const SETTINGS_KEY = "settings";
 const fields = {
@@ -67,12 +67,12 @@ async function cleanActiveTab() {
     return;
   }
 
-  const result = cleanUrl(tab.url, settings);
+  const result = previewUrl(tab.url, settings);
   if (result.ok && result.changed) {
     await chrome.tabs.update(tab.id, { url: result.cleanedUrl });
   }
 
   fields.previewOutput.textContent = result.changed
     ? result.cleanedUrl
-    : result.reason || "Current tab is already clean.";
+    : result.reason || "Current tab is already swept.";
 }
