@@ -1,6 +1,6 @@
-# TidyURL Maid
+# linksweeper
 
-TidyURL Maid is a dependency-free Manifest V3 prototype for a URL cleaner and
+linksweeper is a dependency-free Manifest V3 prototype for a URL cleaner and
 redirector extension.
 
 ## MVP Features
@@ -15,7 +15,7 @@ redirector extension.
 
 1. Open `chrome://extensions`.
 2. Enable Developer mode.
-3. Load `/home/rhax/url-cleaner-redirector` as an unpacked extension.
+3. Load `/home/rhax/linksweep` as an unpacked extension.
 4. Open the extension popup and preview a URL.
 5. Open the options page to enable or edit redirect rules.
 
