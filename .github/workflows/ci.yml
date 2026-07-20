@@ -15,3 +15,9 @@ jobs:
         with:
           node-version: 22
       - run: npm run ci
+      - name: Upload extension artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linksweep-extension-${{ github.sha }}
+          path: dist/linksweep-v*.zip
+          if-no-files-found: error
